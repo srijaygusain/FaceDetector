@@ -3,8 +3,9 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/facedetector/app/src/main/res/layout/activity_fullimage.xml" value="0.11041666666666666" />
+        <entry key="..\:/facedetector/app/src/main/res/layout/activity_fullimage.xml" value="0.2" />
         <entry key="..\:/facedetector/app/src/main/res/layout/activity_main.xml" value="0.22327898550724637" />
+        <entry key="..\:/facedetector/app/src/main/res/layout/activity_vision_live_preview.xml" value="0.22327898550724637" />
         <entry key="..\:/facedetector/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.1215" />
         <entry key="..\:/facedetector/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.1215" />
       </map>

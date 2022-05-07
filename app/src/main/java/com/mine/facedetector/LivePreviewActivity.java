@@ -16,12 +16,20 @@
 
 package com.mine.facedetector;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.provider.MediaStore;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -31,14 +39,24 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.gms.common.annotation.KeepName;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Live preview demo for ML Kit APIs.
  */
 @KeepName
 public final class LivePreviewActivity extends AppCompatActivity {
+
+    Handler handler = new Handler();
+    OutputStream outputStream;
+    Runnable runnable;
+    //GestureDetector gestureDetector;
+    int delay=0001;
 
     private static final String TAG = "LivePreviewActivity";
 
@@ -99,25 +117,76 @@ public final class LivePreviewActivity extends AppCompatActivity {
             }
         });
 
-        imgCameraCapture.setOnClickListener(v -> {
-            if(isPhotoDetected){
-                isPhotoClicked = true;
-                bitmap = loadBitmapFromView(graphicOverlay);
-                imgCapture.setImageBitmap(bitmap);
-                imgCapture.setVisibility(View.VISIBLE);
-                imgDone.setVisibility(View.VISIBLE);
-                createImageFromBitmap(bitmap);
-            }else{
-                Toast.makeText(this, "Please capture image only!", Toast.LENGTH_SHORT).show();
-            }
 
-        });
+        startrepeating();
 
 
         createCameraSource();
         toggleCamera();
     }
 
+
+
+    public void startrepeating()
+    {
+        mRunnable.run();
+
+    }
+    private Runnable mRunnable= new Runnable() {
+        @Override
+        public void run() {
+            if(isPhotoDetected){
+                imgCameraCapture.setVisibility(View.VISIBLE);
+                imgCameraCapture.setOnClickListener(v -> {
+
+                    isPhotoClicked = true;
+                    bitmap = loadBitmapFromView(graphicOverlay);
+                    imgCapture.setImageBitmap(bitmap);
+                    imgCapture.setVisibility(View.VISIBLE);
+                    imgDone.setVisibility(View.VISIBLE);
+                    createImageFromBitmap(bitmap);
+                    saveImage(UUID.randomUUID().toString(),bitmap);
+                    handler.removeCallbacks(mRunnable);
+            /*else{
+                Toast.makeText(this, "Image capture only when face detected!", Toast.LENGTH_SHORT).show();
+            }*/
+
+                });
+            }
+            else{
+                imgCameraCapture.setVisibility(View.INVISIBLE);
+            }
+            handler.postDelayed(this,0001);
+        }
+    };
+    public boolean saveImage(String imgName,Bitmap bmap){
+        Uri ImageCollection=null;
+        ContentResolver resolver= getContentResolver();
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.Q){
+            ImageCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+        }
+        else{
+            ImageCollection=MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        }
+
+        ContentValues contentValues= new ContentValues();
+        contentValues.put(MediaStore.Images.Media.DISPLAY_NAME,imgName+".jpg");
+        contentValues.put(MediaStore.Images.Media.MIME_TYPE,"image/jpeg");
+        Uri imageUri= resolver.insert(ImageCollection,contentValues);
+
+        try {
+            outputStream=resolver.openOutputStream(Objects.requireNonNull(imageUri));
+            bitmap.compress(Bitmap.CompressFormat.JPEG,100,outputStream);
+            Objects.requireNonNull(outputStream);
+            Toast.makeText(getApplicationContext(), "Image saved successfully", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+        catch (Exception e){
+            Toast.makeText(getApplicationContext(), "Image not saved", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+        return false;
+    }
     public String createImageFromBitmap(Bitmap bitmap) {
         String fileName = "myImage";//no .png or .jpg needed
         try {
