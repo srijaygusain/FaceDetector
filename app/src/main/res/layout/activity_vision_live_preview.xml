@@ -71,5 +71,18 @@
         android:scaleType="centerCrop"
         android:background="@color/grey"
         ></ImageView>
+    <VideoView
+        android:id="@+id/videoView"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/control"
+        android:visibility="gone"
+        android:scaleType="centerCrop"
+        android:background="@color/grey">
+
+    </VideoView>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
